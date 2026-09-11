@@ -1,6 +1,13 @@
-# Excalidraw Diagram Skill
+# Excalidraw Diagram Skill — sustainable AG fork
 
 A coding agent skill that generates beautiful and practical Excalidraw diagrams from natural language descriptions. Not just boxes-and-arrows - diagrams that **argue visually**.
+
+> **This is a fork of [coleam00/excalidraw-diagram-skill](https://github.com/coleam00/excalidraw-diagram-skill)** with two changes:
+>
+> 1. **Brand palette** — `references/color-palette.md` carries the sustainable AG eucalyptus/Pale-Red palette, matching the CEF-online design tokens.
+> 2. **Node renderer instead of Python** — the upstream `uv` + Python pipeline is replaced by `references/render_excalidraw.mjs`, which borrows whatever Playwright is already on the machine. The template also loads Excalidraw from **esm.run**, not esm.sh, whose bundle pulls a transitive dependency that 404s — the module then never evaluates and the render times out with no error.
+>
+> Everything else is upstream's design methodology, which is the valuable part.
 
 Compatible with any coding agent that supports skills. For agents that read from `.claude/skills/` (like [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and [OpenCode](https://github.com/nicepkg/OpenCode)), just drop it in and go.
 
@@ -13,27 +20,31 @@ Compatible with any coding agent that supports skills. For agents that read from
 
 ## Installation
 
-Clone or download this repo, then copy it into your project's `.claude/skills/` directory:
+**Globally (recommended)** — one copy, available in every repo:
 
 ```bash
-git clone https://github.com/coleam00/excalidraw-diagram-skill.git
-cp -r excalidraw-diagram-skill .claude/skills/excalidraw-diagram
+npx skills add -g JE-sustainable/excalidraw-diagram-skill --copy
+```
+
+That lands at `~/.agents/skills/excalidraw-diagram`, symlinked into `~/.claude/skills/`. `--copy` rather than a symlinked mirror, so local tweaks survive.
+
+**Project-local** — only if a specific repo needs its own pinned version:
+
+```bash
+npx skills add JE-sustainable/excalidraw-diagram-skill
 ```
 
 ## Setup
 
-The skill includes a render pipeline that lets the agent visually validate its diagrams. There are two ways to set it up:
+Usually none. The renderer looks for Playwright in this order — `$EXCALIDRAW_PLAYWRIGHT` → the skill's own `references/node_modules` → **the current repo's `node_modules`** → bare resolution — so inside any repo that already has Node Playwright it works untouched.
 
-**Option A: Ask your coding agent (easiest)**
-
-Just tell your agent: *"Set up the Excalidraw diagram skill renderer by following the instructions in SKILL.md."* It will run the commands for you.
-
-**Option B: Manual**
+If it can't find one:
 
 ```bash
-cd .claude/skills/excalidraw-diagram/references
-uv sync
-uv run playwright install chromium
+npx playwright install chromium          # once per machine (browsers are shared per-user)
+
+# and, only if no repo-local Playwright exists:
+cd ~/.claude/skills/excalidraw-diagram/references && npm install
 ```
 
 ## Usage
@@ -57,7 +68,7 @@ excalidraw-diagram/
     color-palette.md                # Brand colors (edit this to customize)
     element-templates.md            # JSON templates for each element type
     json-schema.md                  # Excalidraw JSON format reference
-    render_excalidraw.py            # Render .excalidraw to PNG
-    render_template.html            # Browser template for rendering
-    pyproject.toml                  # Python dependencies (playwright)
+    render_excalidraw.mjs           # Render .excalidraw to PNG (Node + Playwright)
+    render_template.html            # Browser template for rendering (loads Excalidraw from esm.run)
+    package.json                    # Optional self-contained Playwright install
 ```

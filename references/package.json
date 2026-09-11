@@ -1,0 +1,13 @@
+{
+  "name": "excalidraw-diagram-render",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Optional self-contained Playwright install for the excalidraw-diagram skill's renderer. Only needed if no project-local or env-pointed Playwright is available — see render_excalidraw.mjs.",
+  "scripts": {
+    "render": "node render_excalidraw.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0"
+  }
+}
